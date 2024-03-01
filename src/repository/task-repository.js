@@ -29,11 +29,12 @@ class TaskRepository{
     }
     async getAllTask(data){
         try {
-            const user = req.body.user
-            const tasks = await Task.find({user})
+            console.log("inside repo layer")
+            const tasks = await Task.find(data)
+            console.log(tasks)
             return tasks
         } catch (error) {
-            
+            console.log("repsository layer error")
         }
     }
 }
