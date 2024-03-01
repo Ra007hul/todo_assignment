@@ -11,6 +11,9 @@ class TaskService{
             console.log(error)
         }
     }
+    async delete(id){
+        
+    }
 }
 
 module.exports = TaskService

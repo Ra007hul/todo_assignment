@@ -4,7 +4,9 @@ const taskServiceInstance = new taskService();
 
 const create = async (req,res)=>{
     try {
-        const task = await taskServiceInstance.create(req.body)
+        const { title, description, dueDate } = req.body;
+        const user = req.user.id;
+        const task = await taskServiceInstance.create({title,description,dueDate,user})
         return res.status(200).json({
             success : true,
             data : task

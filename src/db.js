@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
 
+const jwt= require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+
 mongoose.connect('mongodb://127.0.0.1:27017/openinapp_dev')
      .then(()=>{
         console.log("database connnection successfully")
@@ -9,14 +12,31 @@ mongoose.connect('mongodb://127.0.0.1:27017/openinapp_dev')
 
 // Subtask Schema
 const subtaskSchema = mongoose.Schema({
-        task_id : { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
-        description : String,
+        task_id : { 
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: 'Task', 
+          required : true
+        },
+        description : {
+          type : String,
+          required : true
+        },
         status : {
           type : Number,
           enum : [0,1],
           default : 0
+        },
+        createdAt : {
+          type : Date,
+          Default : Date.now
+        },
+        updatedAt : {
+          type : Date
+        },
+        deletedAt : {
+          type : Date
         }
-  },{timestamps : true})
+  })
 
 //Task Schema
 const taskSchema = mongoose.Schema({
@@ -25,8 +45,15 @@ const taskSchema = mongoose.Schema({
           required : true
         },
         description : String,
-        dueDate : Date,
-        subtasks  : [subtaskSchema],
+        dueDate : {
+          type : Date,
+          required : true
+        },
+        user : {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'User',
+          required : true
+        },
         priority : {
            type : Number,
            enum : [0,1,2,3,4,5],
@@ -46,6 +73,13 @@ const userSchema = mongoose.Schema({
       required : true,
       unique : true
     },
+    email : {
+      type : String,
+    },
+    password : {
+      type : String,
+      minlength: 8
+    },
     phone_number : {
       type : Number,
       required : true,
@@ -54,10 +88,26 @@ const userSchema = mongoose.Schema({
         type : Number,
         enum : [0,1,2],
         default : 2
-    },
-    task : [taskSchema]
+    }
+    
     
 })
+userSchema.pre('save', function(next){
+  const user = this
+  const SALT = bcrypt.genSaltSync(9);
+  const encryptedPassword = bcrypt.hashSync(user.password,SALT)
+  user.password = encryptedPassword;
+  next()
+})
+
+userSchema.methods.comparePassword = function compare(password){
+  return bcrypt.compareSync(password,this.password)
+}
+userSchema.methods.genJWT = function generate(){
+  return jwt.sign({id : this._id,email:this.email},'openinapp_secret',{
+      expiresIn : '1h'
+  })
+}
 
 
 const User = mongoose.model('User',userSchema)
