@@ -1,6 +1,14 @@
 const express = require('express')
 const mainRouter = require('./routes/index')
 const bodyParser = require('body-parser')
+const cron = require('node-cron');
+const {Task} = require('./db'); 
+const {User} = require('./db'); 
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilio = require('twilio')
+const client = new twilio.Twilio(accountSid,authToken);
+
 const app = express()
 
 
@@ -27,15 +35,15 @@ app.listen(3000,()=>{
         }
     });
     
-    // Cron job for voice calling using Twilio
+    
     cron.schedule('0 * * * *', async () => {
         try {
-            // Query tasks that have passed their due dates
+          
             const overdueTasks = await Task.find({ dueDate: { $lt: new Date() } });
     
-            // Iterate over overdue tasks and initiate voice calls
+           
             for (const task of overdueTasks) {
-                const user = await User.findById(task.user_id);
+                const user = await User.findById(task.user);
                 const priority = user.priority; 
     
                 
@@ -43,7 +51,7 @@ app.listen(3000,()=>{
                     
                     const call = await twilioClient.calls.create({
                         url: 'http://demo.twilio.com/docs/voice.xml',
-                        to: user.phoneNumber, // Assuming phone number is stored in user document
+                        to: user.phoneNumber, 
                         from: '+14242275383'
                     });
     
@@ -58,7 +66,7 @@ app.listen(3000,()=>{
         }
     });
     
-    // Function to calculate task priority based on due date
+    
     async function calculatePriority(dueDate) {
         const date = new Date();
         const tasks = await Task.find({ due_date: { $lt: new Date() } });

@@ -4,16 +4,16 @@ const user = require('../../controller/user-controller')
 const subtask = require('../../controller/subtask-controller')
 const {authentication}=require('../../middlewares/authentication')
 
+
+
 const router = express.Router();
 
-function test(){
-    console.log('hello')
-}
+
 
 router.delete('/task/:id',authentication,task.deleteTask)
 
 router.patch('/subtask/:id',authentication,subtask.updateSubtask)
-router.patch('/task/:id',test,authentication,task.updatedTask)
+router.patch('/task/:id',authentication,task.updatedTask)
 
 router.post('/task',authentication,task.create)
 router.post('/signup',user.signup)
