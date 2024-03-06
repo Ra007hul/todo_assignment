@@ -6,8 +6,8 @@ const {Task} = require('./db');
 const {User} = require('./db'); 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilio = require('twilio')
-const client = new twilio.Twilio(accountSid,authToken);
+// const twilio = require('twilio')
+// const client = new twilio.Twilio(accountSid,authToken);
 
 const app = express()
 
@@ -24,9 +24,9 @@ app.listen(3000,()=>{
             // Query tasks from the database based on their due dates
             const tasks = await Task.find({ dueDate: { $lt: new Date() } });
     
-            // Update task priorities based on due dates
+           
             tasks.forEach(async task => {
-                // Update priority based on task due date logic
+                
                 task.priority = calculatePriority(task.dueDate);
                 await task.save();
             });
